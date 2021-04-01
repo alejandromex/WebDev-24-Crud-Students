@@ -1,0 +1,97 @@
+
+PROCEDURE ExecuteCommand(sQlCommand is string, eType is TypeOfCommand, eStatmement is Statement, parameters is array of strings = [])
+ds is Data Source
+
+
+sParams is string;
+IF(parameters..Count > 0) THEN
+	FOR EACH param OF parameters
+		sParams += " '"+param+"',";
+	END
+	sParams = Left(sParams, Val(Length(sParams))-1);
+	sQlCommand += sParams;
+END
+
+
+
+IF eType = TypeOfCommand.QUERY THEN
+	
+	SWITCH eStatmement
+		CASE Statement._SELECT:
+			IF HExecuteSQLQuery(ds, connectionToDb, hQueryWithoutCorrection, sQlCommand) THEN
+				RESULT ds;
+			END
+			
+		CASE Statement._INSERT:
+			IF HExecuteSQLQuery(ds, connectionToDb, hQueryWithoutCorrection, sQlCommand) THEN
+				RESULT True;
+			ELSE
+				RESULT False
+			END
+			
+			
+		CASE Statement._UPDATE:
+			IF HExecuteSQLQuery(ds, connectionToDb, hQueryWithoutCorrection, sQlCommand) THEN
+				RESULT True;
+			ELSE
+				RESULT False
+			END
+			
+		CASE Statement._DELETE:
+			IF HExecuteSQLQuery(ds, connectionToDb, hQueryWithoutCorrection, sQlCommand) THEN
+				RESULT True;
+			ELSE
+				RESULT False
+			END
+			
+		CASE Statement._GET
+	END	
+	
+	
+ELSE IF eType = TypeOfCommand.STOREPROCEDURE
+
+	
+	SWITCH eStatmement
+		CASE Statement._SELECT:
+			
+			sQlCommand = "spSELECT_"+sQlCommand;
+			IF HExecuteSQLQuery(ds, connectionToDb, hQueryWithoutCorrection, sQlCommand) THEN
+				RESULT ds;
+			END
+			
+		CASE Statement._INSERT:
+			sQlCommand = "spINSERT_"+sQlCommand;
+			IF HExecuteSQLQuery(ds, connectionToDb, hQueryWithoutCorrection, sQlCommand) THEN
+				RESULT True;
+			ELSE
+				RESULT False
+			END
+			
+			
+		CASE Statement._UPDATE:
+			sQlCommand = "spUPDATE_"+sQlCommand;
+			IF HExecuteSQLQuery(ds, connectionToDb, hQueryWithoutCorrection, sQlCommand) THEN
+				RESULT True;
+			ELSE
+				RESULT False
+			END
+			
+		CASE Statement._DELETE:
+			sQlCommand = "spDELETE_"+sQlCommand;
+			IF HExecuteSQLQuery(ds, connectionToDb, hQueryWithoutCorrection, sQlCommand) THEN
+				RESULT True;
+			ELSE
+				RESULT False
+			END
+			
+		CASE Statement._GET
+			
+	END
+	
+	
+END
+
+
+
+
+
